@@ -2,7 +2,7 @@ from telegram.ext import Updater, CommandHandler
 from random import randrange
 import logging, csv
 
-
+#initialising
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 token = open("config.txt","r").read().strip()
 updater = Updater(token=token, use_context=True)
@@ -17,6 +17,7 @@ def countquotes(filename):
 #adds a quote to the database
 def add(update, context):
 
+    #collect information from message
     text = update.message.reply_to_message.text
     date = str(update.message.reply_to_message.date.now())
     user = update.message.reply_to_message.from_user.first_name
@@ -26,8 +27,7 @@ def add(update, context):
     print(date)
     print(text)
 
-
-
+    #write data to csv
     with open('quotes.csv', 'a', encoding='utf-8') as csvfile:
         fieldnames = ['id', 'username', 'date', 'quote']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -45,43 +45,61 @@ def add(update, context):
 def random(update, context):
 
     mode = 1
-    counter = countquotes('quotes.csv')
-    pseudorandom = randrange(counter-1)
 
+    amount = 1
+    cycleAmount = 0
     #keyword specified in message, save it
     if(len(update.message.text.partition(' ')[2]) > 2):
         keyword = update.message.text.partition(' ')[2]
         mode = 2
+    #if a number is passed send that many quotes
+    elif(len(update.message.text.partition(' ')[2]) == 1):
+        #if(type(update.message.text.partition(' ')[2]) == type(1)):
+            print("we did it")
+            amount = int(update.message.text.partition(' ')[2])
+            mode = 3
 
-    with open('quotes.csv', 'r', encoding='utf-8') as csvfile:
-        fieldnames = ['id', 'username', 'date', 'quote']
-        reader = csv.DictReader(csvfile, delimiter= ',')
-        candidates = []
+    #repeat process if desired
+    while(cycleAmount < amount):
 
-        #keyword specified
-        if(mode == 2):
-            for row in reader:
-                quote = row['quote']
-                if keyword in quote:
-                    candidates.append(row)
-            counter = len(candidates)
-            pseudorandom = randrange(counter)
-            for row in candidates:
-                if(candidates.index(row) == pseudorandom):
-                    text = row['quote']
-                    date = row['date']
-                    user = row['username']
+        counter = countquotes('quotes.csv')
+        pseudorandom = randrange(counter-1)
 
-        #no keyword
-        else:
-            for row in reader:
-                if(reader.line_num - 2 == pseudorandom):
-                    text = row['quote']
-                    date = row['date']
-                    user = row['username']
+        with open('quotes.csv', 'r', encoding='utf-8') as csvfile:
+            fieldnames = ['id', 'username', 'date', 'quote']
+            reader = csv.DictReader(csvfile, delimiter= ',')
+            candidates = []
 
-    finalstring = user + " @ " + date + ": \n" + text
-    context.bot.send_message(chat_id=update.message.chat_id, text=finalstring)
+            #keyword specified
+            if(mode == 2):
+                for row in reader:
+                    quote = row['quote']
+                    if keyword in quote:
+                        candidates.append(row)
+                counter = len(candidates)
+                #no quote found containing the keyword
+                if(counter == 0):
+                    context.bot.send_message(chat_id=update.message.chat_id, text="Nothing found!")
+                    return
+                else:
+                    pseudorandom = randrange(counter)
+                    for row in candidates:
+                        if(candidates.index(row) == pseudorandom):
+                            text = row['quote']
+                            date = row['date']
+                            user = row['username']
+
+            #no keyword
+            else:
+                for row in reader:
+                    if(reader.line_num - 2 == pseudorandom):
+                        text = row['quote']
+                        date = row['date']
+                        user = row['username']
+
+        finalstring = user + " @ " + date + ": \n" + text
+        context.bot.send_message(chat_id=update.message.chat_id, text=finalstring)
+        cycleAmount += 1
 
 
 
