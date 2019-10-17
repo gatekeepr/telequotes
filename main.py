@@ -54,8 +54,6 @@ def random(update, context):
         mode = 2
     #if a number is passed send that many quotes
     elif(len(update.message.text.partition(' ')[2]) == 1):
-        #if(type(update.message.text.partition(' ')[2]) == type(1)):
-            print("we did it")
             amount = int(update.message.text.partition(' ')[2])
             mode = 3
 
