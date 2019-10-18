@@ -1,6 +1,6 @@
 from telegram.ext import Updater, CommandHandler
 from random import randrange
-import logging, csv
+import logging, csv, time
 
 # initialising
 logging.basicConfig(
@@ -59,17 +59,19 @@ def random(update, context):
         mode = 1
         amount = 1
         cycleAmount = 0
-        # keyword specified in message, save it
-        if len(context.args[0]) > 2:
-            # if a number is also passed as second argument cycle multiple times
-            if len(context.args[1]) == 1:
-                amount = int(context.args[1])
-            keyword = context.args[0]
-            mode = 2
-        # if a number is passed send that many quotes
-        elif len(context.args[0]) == 1:
-            amount = int(context.args[0])
-            mode = 3
+        if context.args:
+            # keyword specified in message, save it
+            if len(context.args[0]) > 1:
+                # if a number is also passed as second argument cycle multiple times
+                if len(context.args) > 1:
+                    if len(context.args[1]) == 1:
+                        amount = int(context.args[1])
+                keyword = context.args[0]
+                mode = 2
+            # if a number is passed send that many quotes
+            elif len(context.args[0]) == 1:
+                amount = int(context.args[0])
+                mode = 3
 
         # repeat process if desired
         while cycleAmount < amount:
@@ -114,6 +116,7 @@ def random(update, context):
             finalstring = user + " @ " + date + ": \n" + text
             context.bot.send_message(chat_id=update.message.chat_id, text=finalstring)
             cycleAmount += 1
+            time.sleep(1)
 
 
 dispatcher.add_handler(CommandHandler("add", add))
