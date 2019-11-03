@@ -11,7 +11,8 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 token = open("config.txt", "r").read().strip()
-legalusers = int(open("legalusers.txt", "r").read().strip())
+legalusers = open("legalusers.txt", "r").readlines()
+legalusers = list(map(int, legalusers))
 updater = Updater(token=token, use_context=True)
 dispatcher = updater.dispatcher
 
@@ -22,15 +23,12 @@ def countquotes(filename):
         return sum(1 for line in f)
 
 def quoteToAudio(text, user):
-    #print(user)
-    #print(text)
-    #voiceline = user + " sagte: " + text
     ttsobj = gTTS(text=text, lang='de', slow=False)
     ttsobj.save("Kek.mp3")
 
 def tts(update, context):
 
-    if update.message.chat.id != legalusers:
+    if update.message.chat.id not in legalusers:
         context.bot.send_message(
             chat_id=update.message.chat_id, text="Sorry, this is a private Bot!"
         )
@@ -54,7 +52,7 @@ def tts(update, context):
 # adds a quote to the database
 def add(update, context):
 
-    if update.message.chat.id != legalusers:
+    if update.message.chat.id not in legalusers:
         context.bot.send_message(
             chat_id=update.message.chat_id, text="Sorry, this is a private Bot!"
         )
@@ -84,7 +82,7 @@ def add(update, context):
 # sends a fully random quote if no keyword is passed
 def random(update, context):
 
-    if update.message.chat.id != legalusers:
+    if update.message.chat.id not in legalusers:
         context.bot.send_message(
             chat_id=update.message.chat_id, text="Sorry, this is a private Bot!"
         )
