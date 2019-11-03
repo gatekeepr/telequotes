@@ -1,6 +1,10 @@
 from telegram.ext import Updater, CommandHandler
 from random import randrange
-import logging, csv, time
+from gtts import gTTS
+import logging
+import csv
+import time
+import os
 
 # initialising
 logging.basicConfig(
@@ -16,6 +20,31 @@ dispatcher = updater.dispatcher
 def countquotes(filename):
     with open(filename) as f:
         return sum(1 for line in f)
+
+def quoteToAudio(text):
+    ttsobj = gTTS(text=text, lang='de', slow=False)
+    ttsobj.save("ttsobj.mp3")
+
+def tts(update, context):
+
+    if update.message.chat.id != legalusers:
+        context.bot.send_message(
+            chat_id=update.message.chat_id, text="Sorry, this is a private Bot!"
+        )
+    else:
+        counter = countquotes("quotes.csv")
+        pseudorandom = randrange(counter - 1)
+
+        with open("quotes.csv", "r", encoding="utf-8") as csvfile:
+            fieldnames = ["id", "username", "date", "quote"]
+            reader = csv.DictReader(csvfile, delimiter=",")
+            for row in reader:
+                if reader.line_num - 2 == pseudorandom:
+                    text = row["quote"]
+        quoteToAudio(text)
+        context.bot.send_audio(chat_id=update.message.chat_id, audio=open('ttsobj.mp3', 'rb'))
+        os.system("rm ttsobj.mp3")
+
 
 
 # adds a quote to the database
@@ -114,11 +143,13 @@ def random(update, context):
                             user = row["username"]
 
             finalstring = user + " @ " + date + ": \n" + text
-            context.bot.send_message(chat_id=update.message.chat_id, text=finalstring)
+            context.bot.send_message(
+                chat_id=update.message.chat_id, text=finalstring)
             cycleAmount += 1
             time.sleep(1)
 
 
 dispatcher.add_handler(CommandHandler("add", add))
 dispatcher.add_handler(CommandHandler("random", random))
+dispatcher.add_handler(CommandHandler("tts", tts))
 updater.start_polling()
