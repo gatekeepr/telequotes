@@ -22,10 +22,13 @@ def countquotes(filename):
     with open(filename) as f:
         return sum(1 for line in f)
 
-def quoteToAudio(text, user):
+# creates an mp3 for a given string
+def quoteToAudio(text):
     ttsobj = gTTS(text=text, lang='de', slow=False)
     ttsobj.save("Kek.mp3")
 
+
+# sends a random quote as a text message
 def tts(update, context):
 
     if update.message.chat.id not in legalusers:
@@ -42,8 +45,7 @@ def tts(update, context):
             for row in reader:
                 if reader.line_num - 2 == pseudorandom:
                     text = row["quote"]
-                    user = row["username"]
-        quoteToAudio(text, user)
+        quoteToAudio(text)
         context.bot.send_audio(chat_id=update.message.chat_id, audio=open('Kek.mp3', 'rb'))
         os.system("rm Kek.mp3")
 
@@ -150,7 +152,7 @@ def random(update, context):
             cycleAmount += 1
             time.sleep(1)
 
-
+# deplpy dispatcher and wait for messages
 dispatcher.add_handler(CommandHandler("add", add))
 dispatcher.add_handler(CommandHandler("random", random))
 dispatcher.add_handler(CommandHandler("tts", tts))
