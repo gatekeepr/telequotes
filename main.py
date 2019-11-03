@@ -21,9 +21,12 @@ def countquotes(filename):
     with open(filename) as f:
         return sum(1 for line in f)
 
-def quoteToAudio(text):
+def quoteToAudio(text, user):
+    #print(user)
+    #print(text)
+    #voiceline = user + " sagte: " + text
     ttsobj = gTTS(text=text, lang='de', slow=False)
-    ttsobj.save("ttsobj.mp3")
+    ttsobj.save("Kek.mp3")
 
 def tts(update, context):
 
@@ -41,9 +44,10 @@ def tts(update, context):
             for row in reader:
                 if reader.line_num - 2 == pseudorandom:
                     text = row["quote"]
-        quoteToAudio(text)
-        context.bot.send_audio(chat_id=update.message.chat_id, audio=open('ttsobj.mp3', 'rb'))
-        os.system("rm ttsobj.mp3")
+                    user = row["username"]
+        quoteToAudio(text, user)
+        context.bot.send_audio(chat_id=update.message.chat_id, audio=open('Kek.mp3', 'rb'))
+        os.system("rm Kek.mp3")
 
 
 
