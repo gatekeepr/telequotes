@@ -36,19 +36,43 @@ def tts(update, context):
             chat_id=update.message.chat_id, text="Sorry, this is a private Bot!"
         )
     else:
+
+        if context.args:
+            if len(context.args[0]) > 1:
+                keyword = context.args[0]
+
+        candidates = []
         counter = countquotes("quotes.csv")
         pseudorandom = randrange(counter - 1)
 
         with open("quotes.csv", "r", encoding="utf-8") as csvfile:
             fieldnames = ["id", "username", "date", "quote"]
             reader = csv.DictReader(csvfile, delimiter=",")
-            for row in reader:
-                if reader.line_num - 2 == pseudorandom:
-                    text = row["quote"]
-        quoteToAudio(text)
-        context.bot.send_audio(chat_id=update.message.chat_id, audio=open('Kek.mp3', 'rb'))
-        os.system("rm Kek.mp3")
+            if(keyword):
+                for row in reader:
+                    quote = row["quote"]
+                    if keyword in quote:
+                        candidates.append(row)
+                counter = len(candidates)
+                if counter == 0:
+                    context.bot.send_message(
+                        chat_id=update.message.chat_id, text="Nothing found!"
+                    )
+                    return
+                else:
+                    pseudorandom = randrange(counter)
+                    for row in candidates:
+                        if candidates.index(row) == pseudorandom:
+                            text = row["quote"]
+            else:
+                for row in reader:
+                    if reader.line_num - 2 == pseudorandom:
+                        text = row["quote"]
 
+        quoteToAudio(text)
+        context.bot.send_audio(
+            chat_id=update.message.chat_id, audio=open('Kek.mp3', 'rb'))
+        os.system("rm Kek.mp3")
 
 
 # adds a quote to the database
@@ -135,22 +159,18 @@ def random(update, context):
                         for row in candidates:
                             if candidates.index(row) == pseudorandom:
                                 text = row["quote"]
-                                date = row["date"]
-                                user = row["username"]
 
                 # no keyword
                 else:
                     for row in reader:
                         if reader.line_num - 2 == pseudorandom:
                             text = row["quote"]
-                            date = row["date"]
-                            user = row["username"]
 
-            finalstring = user + " @ " + date + ": \n" + text
             context.bot.send_message(
-                chat_id=update.message.chat_id, text=finalstring)
+                chat_id=update.message.chat_id, text=text)
             cycleAmount += 1
             time.sleep(1)
+
 
 # deplpy dispatcher and wait for messages
 dispatcher.add_handler(CommandHandler("add", add))
